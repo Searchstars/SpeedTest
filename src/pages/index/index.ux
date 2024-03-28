@@ -9,6 +9,7 @@
 <script>
 import router from '@system.router'
 import fetch from '@system.fetch'
+import brightness from '@system.brightness'
 
 export default {
   // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
@@ -101,6 +102,11 @@ export default {
   },
   async Start(){
     await this.TestPing()
+  },
+  onInit(){
+    brightness.setKeepScreenOn({
+      keepScreenOn: true
+    })
   }
 }
 </script>
