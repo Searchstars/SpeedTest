@@ -9,7 +9,6 @@
 <script>
 import router from '@system.router'
 import fetch from '@system.fetch'
-import request from '@system.request'
 
 export default {
   // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
@@ -25,26 +24,17 @@ export default {
     down_interval: null,
     can_next: true
   },
-  async TestDownSpeed(){
-    this.stattext = "1M 文件下载测试"
+  async TestDownSpeed(size){
+    this.stattext = size + "M 文件下载测试"
     this.rettext = "等待下载完成..."
     var start_time = new Date().getTime()
-    request.download({
-      url: "http://test.ustc.edu.cn/backend/garbage.php?ckSize=1",
-      success: (token_) => {
-        console.log(token_)
-        setTimeout(() => {
-          request.onDownloadComplete({
-            token: token_,
-            success: (uri) => {
-              var end_time = new Date().getTime()
-              console.log("1M测速文件下载到：" + uri)
-              this.rettext = (1 / (end_time - start_time)).toString() + " MB/s"
-            }
-          },500)
-        })
-      }
+    console.log("begin fetch")
+    var ONEm_ret = await fetch.fetch({
+      url: "http://test.ustc.edu.cn/backend/garbage.php?ckSize=" + size,
+      responseType: "arraybuffer",
     })
+    var end_time = new Date().getTime()
+    this.rettext = (size / (end_time - start_time)).toFixed(3).toString() + " MB/s"
   },
   async TestPing(){
     this.showstart = false
@@ -69,7 +59,13 @@ export default {
         this.http_num ++
         if(this.http_num > 10){
           clearInterval(this.http_interval)
-          this.TestDownSpeed()
+          await this.TestDownSpeed(2)
+          setTimeout(async() => {
+            await this.TestDownSpeed(5)
+            setTimeout(async() => {
+              await this.TestDownSpeed(10)
+            },1000)
+          },1000)
         }
       }
     },500)
