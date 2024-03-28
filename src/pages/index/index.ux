@@ -22,19 +22,34 @@ export default {
     http_interval: null,
     down_num: 0,
     down_interval: null,
-    can_next: true
+    can_next: true,
+    download_speeds: [],
+    pings: []
   },
   async TestDownSpeed(size){
     this.stattext = size + "M 文件下载测试"
     this.rettext = "等待下载完成..."
     var start_time = new Date().getTime()
     console.log("begin fetch")
-    var ONEm_ret = await fetch.fetch({
+    var ret = await fetch.fetch({
       url: "http://test.ustc.edu.cn/backend/garbage.php?ckSize=" + size,
-      responseType: "arraybuffer",
+      header: {
+        "Accept": "*/*",
+        "Accept-Language": "zh-CN;zh;q=1.0",
+        "Connection": "keep-alive",
+        "Cookie": "ustc=1",
+        "Host": "test.ustc.edu.cn",
+        "Referer": "http://test.ustc.edu.cn/speedtest_worker.js",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0"
+      }
     })
     var end_time = new Date().getTime()
-    this.rettext = (size / (end_time - start_time)).toFixed(3).toString() + " MB/s"
+    var time_s = (end_time - start_time) / 1000
+    console.log("用时：" + time_s)
+    var speed = (size / time_s).toFixed(3)
+    this.download_speeds.push(speed)
+    this.rettext = speed.toString() + " MB/s"
+    console.log(ret)
   },
   async TestPing(){
     this.showstart = false
@@ -53,7 +68,9 @@ export default {
         console.log(ret)
         var end_time = new Date().getTime()
         if(ret.data.data != undefined){
-          this.rettext = (end_time - start_time).toString() + " ms"
+          var time = (end_time - start_time)
+          this.rettext = time.toString() + " ms"
+          this.pings.push(time)
         }
         this.can_next = true
         this.http_num ++
