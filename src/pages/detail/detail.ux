@@ -1,26 +1,77 @@
 <template>
-  <div class="demo-page">
-    <text class="title">{{text}}</text>
+  <div class="det-page">
+    <text class="title">测速结果</text>
+    <text class="httpavg">平均HTTP延迟：{{http_avg}}ms</text>
+    <text class="downavg">平均下载速度：{{down_avg}} MB/s</text>
+    <text class="nettype">网络类型：{{nett}}</text>
   </div>
 </template>
 
 <script>
+import network from '@system.network'
 export default {
+  public: {
+    downs: [],
+    pings: []
+  },
   private: {
-    text: '欢迎打开详情页'
+    http_avg: 0,
+    down_avg: 0,
+    nett: "未知"
+  },
+  GetAverage(arr){
+    let sum = 0
+    arr = JSON.parse(arr)
+    for (let i = 0; i<arr.length; i++){
+      sum += Number(arr[i])
+      console.log("Task: " + sum.toString() + " + " + arr[i].toString())
+    }
+    return sum / arr.length
+  },
+  onInit(){
+    network.getType({
+      success: (res) => {
+        this.nett = res.type
+      }
+    })
+    this.http_avg = this.GetAverage(this.pings).toFixed(2)
+    this.down_avg = this.GetAverage(this.downs).toFixed(2)
   }
 }
 </script>
 
 <style>
-.demo-page {
-  flex-direction: column;
+.det-page {
   justify-content: center;
-  align-items: center;
 }
 
 .title {
   font-size: 20px;
   text-align: center;
+  position: absolute;
+  margin-top: 120px;
+  font-size: 30px;
+  color: white
+}
+.httpavg {
+  font-size: 20px;
+  text-align: center;
+  position: absolute;
+  margin-top: 210px;
+  color: white
+}
+.downavg {
+  font-size: 20px;
+  text-align: center;
+  position: absolute;
+  margin-top: 260px;
+  color: white
+}
+.nettype {
+  font-size: 20px;
+  text-align: center;
+  position: absolute;
+  margin-top: 310px;
+  color: white
 }
 </style>

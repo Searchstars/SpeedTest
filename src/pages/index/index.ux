@@ -47,7 +47,7 @@ export default {
     var time_s = (end_time - start_time) / 1000
     console.log("用时：" + time_s)
     var speed = (size / time_s).toFixed(3)
-    this.download_speeds.push(speed)
+    this.download_speeds.push(Number(speed))
     this.rettext = speed.toString() + " MB/s"
     console.log(ret)
   },
@@ -63,24 +63,36 @@ export default {
         var start_time = new Date().getTime()
         console.log("in async")
         var ret = await fetch.fetch({
-          url: "http://www.baidu.com/sugrec"
+          url: "http://www.baidu.com/sugrec",
+          fail: (p1, p2) => {
+            console.log("测速异常：" + p1 + " " + p2)
+          }
         })
         console.log(ret)
         var end_time = new Date().getTime()
         if(ret.data.data != undefined){
           var time = (end_time - start_time)
           this.rettext = time.toString() + " ms"
-          this.pings.push(time)
+          this.pings.push(Number(time))
         }
         this.can_next = true
         this.http_num ++
         if(this.http_num > 10){
           clearInterval(this.http_interval)
-          await this.TestDownSpeed(2)
+          await this.TestDownSpeed(1)
           setTimeout(async() => {
-            await this.TestDownSpeed(5)
+            await this.TestDownSpeed(1)
             setTimeout(async() => {
-              await this.TestDownSpeed(10)
+              await this.TestDownSpeed(2)
+              setTimeout(() => {
+                router.push({
+                  uri: "pages/detail",
+                  params: {
+                    downs: this.download_speeds,
+                    pings: this.pings
+                  }
+                })
+              },1000)
             },1000)
           },1000)
         }
