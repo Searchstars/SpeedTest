@@ -84,7 +84,7 @@ export default {
           setTimeout(async() => {
             await this.TestDownSpeed(1)
             setTimeout(async() => {
-              await this.TestDownSpeed(2)
+              await this.TestDownSpeed(1)
               setTimeout(() => {
                 router.push({
                   uri: "pages/detail",
