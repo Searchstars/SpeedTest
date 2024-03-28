@@ -1,0 +1,100 @@
+<template>
+  <div class="index-page">
+    <input type="button" class="start_btn" value="Start" @click="Start()" show="{{showstart}}"></input>
+    <text class="statshow" show="{{showstat}}">{{stattext}}</text>
+    <text class="retshow" show="{{showret}}">{{rettext}}</text>
+  </div>
+</template>
+
+<script>
+import router from '@system.router'
+import fetch from '@system.fetch'
+import request from '@system.request'
+
+export default {
+  // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
+  private: {
+    stattext: "",
+    rettext: "Waiting...",
+    showstart: true,
+    showstat: false,
+    showret: false,
+    http_num: 0,
+    http_interval: null,
+    down_num: 0,
+    down_interval: null,
+    can_next: true
+  },
+  async TestDownSpeed(){
+    this.stattext = "1M 文件下载测试"
+    this.rettext = "等待下载完成..."
+    var start_time = new Date().getTime()
+    request.download({
+      url: "http://test.ustc.edu.cn/backend/garbage.php?ckSize=1",
+      success: (token_) => {
+        console.log(token_)
+        setTimeout(() => {
+          request.onDownloadComplete({
+            token: token_,
+            success: (uri) => {
+              var end_time = new Date().getTime()
+              console.log("1M测速文件下载到：" + uri)
+              this.rettext = (1 / (end_time - start_time)).toString() + " MB/s"
+            }
+          },500)
+        })
+      }
+    })
+  },
+  async TestPing(){
+    this.showstart = false
+    this.showstat = true
+    this.showret = true
+    this.stattext = "HTTP延迟"
+    console.log("start test http")
+    this.http_interval = setInterval(async() => {
+      if(this.can_next){
+        this.can_next = false
+        var start_time = new Date().getTime()
+        console.log("in async")
+        var ret = await fetch.fetch({
+          url: "http://www.baidu.com/sugrec"
+        })
+        console.log(ret)
+        var end_time = new Date().getTime()
+        if(ret.data.data != undefined){
+          this.rettext = (end_time - start_time).toString() + " ms"
+        }
+        this.can_next = true
+        this.http_num ++
+        if(this.http_num > 10){
+          clearInterval(this.http_interval)
+          this.TestDownSpeed()
+        }
+      }
+    },500)
+  },
+  async Start(){
+    await this.TestPing()
+  }
+}
+</script>
+
+<style>
+.index-page {
+  justify-content: center;
+}
+.start_btn{
+  margin-top: 200px;
+}
+.statshow{
+  position: absolute;
+  margin-top: 160px;
+  color: white
+}
+.retshow{
+  position: absolute;
+  margin-top: 240px;
+  color: white
+}
+</style>
